@@ -8,7 +8,11 @@ public abstract class SimpleTransformation<T,R> implements Transformation<T,R> {
     @Override
     public ExceptionOrValue<R> transform(ExceptionOrValue<T> in) {
         if (in instanceof ExceptionOrValue.Value) {
-            return transformSuccess(((ExceptionOrValue.Value<T>) in).getValue());
+            try {
+                return new ExceptionOrValue.Value<R>(transformSuccess(((ExceptionOrValue.Value<T>) in).getValue()));
+            } catch (Throwable e) {
+                return new ExceptionOrValue.Exception<R>(e);
+            }
         } else if (in instanceof ExceptionOrValue.Exception) {
             return transformFailure(((ExceptionOrValue.Exception<T>) in).getThrowable());
         } else {
@@ -16,7 +20,7 @@ public abstract class SimpleTransformation<T,R> implements Transformation<T,R> {
         }
     }
 
-    protected abstract ExceptionOrValue<R> transformSuccess(T in);
+    protected abstract R transformSuccess(T in) throws Throwable;
     protected ExceptionOrValue<R> transformFailure(Throwable in) {
         return new ExceptionOrValue.Exception<R>(in);
     }
