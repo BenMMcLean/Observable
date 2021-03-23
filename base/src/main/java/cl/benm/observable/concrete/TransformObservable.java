@@ -1,7 +1,6 @@
 package cl.benm.observable.concrete;
 
 import cl.benm.observable.EmissionType;
-import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
 import cl.benm.observable.Transformation;

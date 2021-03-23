@@ -3,6 +3,7 @@ package cl.benm.observable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 
+import cl.benm.observable.concrete.AsyncTransformObservable;
 import cl.benm.observable.concrete.TransformObservable;
 
 public abstract class AbstractObservable<T> implements Observable<T> {
@@ -27,7 +28,7 @@ public abstract class AbstractObservable<T> implements Observable<T> {
 
     @Override
     public <R> Observable<R> transformAsync(AsyncTransformation<T, R> transformation) {
-        return null;
+        return new AsyncTransformObservable<>(this, transformation);
     }
 
     protected boolean inEmittableState(LifecycleOwner owner) {
