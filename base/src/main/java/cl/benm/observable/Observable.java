@@ -4,6 +4,8 @@ import androidx.lifecycle.LifecycleOwner;
 
 public interface Observable<T> {
 
+    EmissionType getEmissionType();
+
     void observe(Observer<T> observer);
     void observe(Observer<T> observer, LifecycleOwner lifecycleOwner);
     void observeOnce(Observer<T> observer);

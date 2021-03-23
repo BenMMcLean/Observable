@@ -21,6 +21,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private ExceptionOrValue<T> lastValue = null;
     private boolean emittedFirst = false;
+    boolean active = false;
 
     @Override
     protected void emit(ExceptionOrValue<T> value) {
@@ -48,6 +49,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         if (emittedFirst) {
             observer.onChanged(lastValue);
         }
+        updateActive();
     }
 
     @Override
@@ -66,11 +68,14 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         if (emittedFirst && inEmittableState(lifecycleOwner)) {
             observer.onChanged(lastValue);
         }
+        updateActive();
     }
 
     @Override
     public void removeObserver(Observer<T> observer) {
-        if (observerList.remove(observer)) return;
+        if (observerList.remove(observer)) {
+            return;
+        }
 
         for (Map.Entry<LifecycleOwner, List<Observer<T>>> l: lifecycleOwnerListMap.entrySet()) {
             List<Observer<T>> v = l.getValue();
@@ -79,13 +84,39 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
                 return;
             }
         }
+        updateActive();
     }
 
     @Override
     public void removeObservers(LifecycleOwner lifecycleOwner) {
         lifecycleOwnerListMap.remove(lifecycleOwner);
         lifecycleOwner.getLifecycle().removeObserver(lifecycleObserver);
+        updateActive();
     }
+
+    protected boolean hasActiveObservers() {
+        if (!observerList.isEmpty()) {
+            return true;
+        }
+        for (Map.Entry<LifecycleOwner, List<Observer<T>>> l: lifecycleOwnerListMap.entrySet()) {
+            if (inEmittableState(l.getKey()) && !l.getValue().isEmpty()) return true;
+        }
+        return false;
+    }
+
+    private void updateActive() {
+        boolean currentlyActive = hasActiveObservers();
+        if (currentlyActive && !active) {
+            onActive();
+            active = true;
+        } else if (!currentlyActive && active) {
+            onInactive();
+            active = false;
+        }
+    }
+
+    protected void onActive() {}
+    protected void onInactive() {}
 
     private final LifecycleObserver lifecycleObserver = (LifecycleEventObserver) (source, event) -> {
         if (inEmittableState(source) && emittedFirst) {
@@ -98,5 +129,6 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         } else if (event == Lifecycle.Event.ON_DESTROY) {
             removeObservers(source);
         }
+        updateActive();
     };
 }

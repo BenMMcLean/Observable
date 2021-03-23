@@ -3,6 +3,8 @@ package cl.benm.observable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 
+import cl.benm.observable.concrete.TransformObservable;
+
 public abstract class AbstractObservable<T> implements Observable<T> {
 
     @Override
@@ -16,13 +18,11 @@ public abstract class AbstractObservable<T> implements Observable<T> {
         });
     }
 
-    protected void emit(ExceptionOrValue<T> value) {
-
-    }
+    protected void emit(ExceptionOrValue<T> value) {}
 
     @Override
     public <R> Observable<R> transform(Transformation<T, R> transformation) {
-        return null;
+        return new TransformObservable<>(this, transformation);
     }
 
     @Override
