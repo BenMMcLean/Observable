@@ -3,6 +3,11 @@ package cl.benm.observable.unwrap;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observer;
 
+/**
+ * Unwraps the value provided to an Observer and passes it to one of two callbacks
+ * based on it's state
+ * @param <T> The input of the transformation
+ */
 public abstract class SimpleObserver<T> implements Observer<T>, Callback<T> {
 
     @Override

@@ -7,13 +7,31 @@ import cl.benm.observable.EmissionType;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
 
+/**
+ * Transform the emissions of an Observable into another Observable.
+ * This class essentially mediates between two Observables, the delegate
+ * and the last Observable output by the transformation. Upon the emission
+ * of a value by the delegate, the value is passed to the transformation.
+ * The output of that transformation is stored and observed while this
+ * Observable has active observers. Upon the emission of a value by the
+ * transformation Observable, said value is emitted to the subscribers
+ * of this Observable.
+ * @param <T> The input type of the transformation
+ * @param <R> The output type of the transformation
+ */
 public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
 
     private final Observable<T> delegate;
     private AsyncTransformation<T,R> transformation;
     private Observable<R> transformationDelegate;
-    private final Executor executor;
+    private Executor executor;
 
+    /**
+     * Instantiate the observable
+     * @param delegate The Observable this Observable will be chained to
+     * @param transformation The transformation to apply
+     * @param executor The thread to execute the transformation on
+     */
     public AsyncTransformObservable(Observable<T> delegate, AsyncTransformation<T, R> transformation, Executor executor) {
         this.delegate = delegate;
         this.transformation = transformation;
@@ -26,6 +44,9 @@ public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
             transformationDelegate.removeObserver(transformationObserver);
         }
         transformationDelegate = transformation.transformAsync(value);
+        if (active) {
+            transformationDelegate.observe(transformationObserver, executor);
+        }
     };
 
     @Override
@@ -42,6 +63,7 @@ public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
         delegate.removeObserver(observer);
     }
 
+    // We don't know the type of the returned Observable, so always return MULTIPLE for consistency
     @Override
     public EmissionType getEmissionType() {
         return EmissionType.MULTIPLE;

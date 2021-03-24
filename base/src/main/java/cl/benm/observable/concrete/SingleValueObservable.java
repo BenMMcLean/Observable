@@ -3,8 +3,16 @@ package cl.benm.observable.concrete;
 import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 
+/**
+ * Outputs a single value known at construction time
+ * @param <T> The type of the value
+ */
 public class SingleValueObservable<T> extends ValueObservable<T> {
 
+    /**
+     * Instantiate the observable
+     * @param value The value to emit
+     */
     public SingleValueObservable(ExceptionOrValue<T> value) {
         emit(value);
     }

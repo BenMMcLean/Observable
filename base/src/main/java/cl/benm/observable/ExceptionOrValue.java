@@ -1,6 +1,14 @@
 package cl.benm.observable;
 
+/**
+ * A "sealed" class that can either represent a value or an exception
+ * @param <T> The type of the value
+ */
 public interface ExceptionOrValue<T> {
+    /**
+     * A value
+     * @param <T> The type of the value
+     */
     class Value<T> implements ExceptionOrValue<T> {
         T value;
 
@@ -17,6 +25,10 @@ public interface ExceptionOrValue<T> {
         }
     }
 
+    /**
+     * An exception
+     * @param <T> The type of the possible value
+     */
     class Exception<T> implements ExceptionOrValue<T> {
         Throwable throwable;
 

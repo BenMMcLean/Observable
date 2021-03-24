@@ -15,10 +15,18 @@ import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observer;
 
+/**
+ * Wrap a future in an Observable
+ * @param <T> The type of the Observable
+ */
 public class FutureObservable<T> extends AbstractObservable<T> {
 
     private final ListenableFuture<T> delegate;
 
+    /**
+     * Instantiate the Observable
+     * @param delegate The internal future
+     */
     public FutureObservable(ListenableFuture<T> delegate) {
         this.delegate = delegate;
     }
@@ -51,6 +59,11 @@ public class FutureObservable<T> extends AbstractObservable<T> {
     @Override
     public void observeOnce(Observer<T> observer, Executor executor) {
         observe(observer, executor);
+    }
+
+    @Override
+    protected void emit(ExceptionOrValue<T> value) {
+        throw new UnsupportedOperationException("emit(ExceptionOrValue) is not supported for FutureObservable!");
     }
 
     @Override
