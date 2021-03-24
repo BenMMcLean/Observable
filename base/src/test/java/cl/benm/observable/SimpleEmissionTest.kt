@@ -19,7 +19,7 @@ class SimpleEmissionTest {
             override fun onFailure(throwable: Throwable?) {
                 throw throwable!!
             }
-        })
+        }, DirectExecutor.INSTANCE)
     }
 
     @Test(timeout = 500)
@@ -39,7 +39,7 @@ class SimpleEmissionTest {
             override fun onFailure(throwable: Throwable?) {
                 throw throwable!!
             }
-        })
+        }, DirectExecutor.INSTANCE)
     }
 
 }

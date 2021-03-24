@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import cl.benm.observable.AbstractObservable;
 import cl.benm.observable.ExceptionOrValue;
@@ -18,6 +19,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private final List<Observer<T>> observerList = new ArrayList<>();
     private final Map<LifecycleOwner, List<Observer<T>>> lifecycleOwnerListMap = new HashMap<>();
+    private final Map<Observer<T>, Executor> executorMap = new HashMap<>();
 
     private ExceptionOrValue<T> lastValue = null;
     private boolean emittedFirst = false;
@@ -39,21 +41,27 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private void emitToList(ExceptionOrValue<T> value, List<Observer<T>> list) {
         for (Observer<T> o: list) {
-            o.onChanged(value);
+            emit(value, o);
         }
     }
 
+    private void emit(ExceptionOrValue<T> value, Observer<T> observer) {
+        Executor executor = executorMap.get(observer);
+        executor.execute(() -> observer.onChanged(lastValue));
+    }
+
     @Override
-    public void observe(Observer<T> observer) {
+    public void observe(Observer<T> observer, Executor executor) {
         observerList.add(observer);
+        executorMap.put(observer, executor);
         if (emittedFirst) {
-            observer.onChanged(lastValue);
+            emit(lastValue, observer);
         }
         updateActive();
     }
 
     @Override
-    public void observe(Observer<T> observer, LifecycleOwner lifecycleOwner) {
+    public void observe(Observer<T> observer, LifecycleOwner lifecycleOwner, Executor executor) {
         List<Observer<T>> observers = lifecycleOwnerListMap.get(lifecycleOwner);
 
         if (observers == null) {
@@ -66,7 +74,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         observers.add(observer);
 
         if (emittedFirst && inEmittableState(lifecycleOwner)) {
-            observer.onChanged(lastValue);
+            emit(lastValue, observer);
         }
         updateActive();
     }
