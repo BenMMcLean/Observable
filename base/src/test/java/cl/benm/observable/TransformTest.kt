@@ -15,7 +15,7 @@ class TransformTest {
                 override fun transformSuccess(`in`: Int?): Int {
                     return `in`!!+1
                 }
-            })
+            }, DirectExecutor.INSTANCE)
         emitter.observe(object: SimpleObserver<Int>() {
             override fun onSuccess(value: Int?) {
                 Assert.assertEquals(value, 1)
@@ -24,7 +24,7 @@ class TransformTest {
             override fun onFailure(throwable: Throwable?) {
                 throw throwable!!
             }
-        })
+        }, DirectExecutor.INSTANCE)
     }
 
     @Test(timeout = 500)
@@ -41,7 +41,7 @@ class TransformTest {
                 override fun transformSuccess(`in`: Int?): Int {
                     return `in`!!+1
                 }
-            })
+            }, DirectExecutor.INSTANCE)
         emitter.observe(object: SimpleObserver<Int>() {
             override fun onSuccess(value: Int?) {
                 Assert.assertEquals(value, emissions[emissionIndex++]+1)
@@ -50,7 +50,7 @@ class TransformTest {
             override fun onFailure(throwable: Throwable?) {
                 throw throwable!!
             }
-        })
+        }, DirectExecutor.INSTANCE)
     }
 
 }
