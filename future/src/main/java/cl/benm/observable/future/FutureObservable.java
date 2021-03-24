@@ -62,11 +62,6 @@ public class FutureObservable<T> extends AbstractObservable<T> {
     }
 
     @Override
-    protected void emit(ExceptionOrValue<T> value) {
-        throw new UnsupportedOperationException("emit(ExceptionOrValue) is not supported for FutureObservable!");
-    }
-
-    @Override
     public void removeObserver(Observer<T> observer) {}
 
     @Override
