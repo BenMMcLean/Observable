@@ -27,12 +27,6 @@ public abstract class AbstractObservable<T> implements Observable<T> {
         }, executor);
     }
 
-    /**
-     * Emit a value to the observable
-     * @param value The value to emit
-     */
-    protected abstract void emit(ExceptionOrValue<T> value);
-
     @Override
     public <R> Observable<R> transform(Transformation<T, R> transformation, Executor executor) {
         return new TransformObservable<>(this, transformation, executor);

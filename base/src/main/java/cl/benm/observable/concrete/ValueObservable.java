@@ -36,7 +36,6 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
      * Emit a value to observers
      * @param value The value to emit
      */
-    @Override
     protected void emit(ExceptionOrValue<T> value) {
         lastValue = value;
         emittedFirst = true;
