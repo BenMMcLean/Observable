@@ -33,12 +33,12 @@ public class FutureObservable<T> extends AbstractObservable<T> {
         FluentFuture.from(delegate).addCallback(new FutureCallback<T>() {
             @Override
             public void onSuccess(@NullableDecl T result) {
-                observer.onChanged(new ExceptionOrValue.Value<T>(result));
+                observer.onChanged(new ExceptionOrValue.Value<>(result));
             }
 
             @Override
             public void onFailure(Throwable t) {
-                observer.onChanged(new ExceptionOrValue.Exception<T>(t));
+                observer.onChanged(new ExceptionOrValue.Exception<>(t));
             }
         }, executor);
     }

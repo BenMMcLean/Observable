@@ -22,7 +22,7 @@ public abstract class SimpleTransformation<T,R> implements Transformation<T,R> {
 
     protected abstract R transformSuccess(T in) throws Throwable;
     protected ExceptionOrValue<R> transformFailure(Throwable in) {
-        return new ExceptionOrValue.Exception<R>(in);
+        return new ExceptionOrValue.Exception<>(in);
     }
 
 }

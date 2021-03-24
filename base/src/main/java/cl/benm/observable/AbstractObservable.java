@@ -16,7 +16,7 @@ public abstract class AbstractObservable<T> implements Observable<T> {
             @Override
             public void onChanged(ExceptionOrValue<T> value) {
                 observer.onChanged(value);
-                removeObserver(this::onChanged);
+                removeObserver(this);
             }
         }, executor);
     }

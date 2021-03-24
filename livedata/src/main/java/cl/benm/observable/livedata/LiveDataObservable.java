@@ -18,9 +18,7 @@ public class LiveDataObservable<T> extends ValueObservable<T> {
         return EmissionType.MULTIPLE;
     }
 
-    private androidx.lifecycle.Observer<T> observer = (v) -> {
-        emit(new ExceptionOrValue.Value<>(v));
-    };
+    private androidx.lifecycle.Observer<T> observer = (v) -> emit(new ExceptionOrValue.Value<>(v));
 
     @Override
     protected void onActive() {

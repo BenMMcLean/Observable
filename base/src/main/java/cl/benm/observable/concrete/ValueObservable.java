@@ -47,7 +47,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private void emit(ExceptionOrValue<T> value, Observer<T> observer) {
         Executor executor = executorMap.get(observer);
-        executor.execute(() -> observer.onChanged(lastValue));
+        executor.execute(() -> observer.onChanged(value));
     }
 
     @Override

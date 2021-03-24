@@ -19,7 +19,7 @@ public class TransformObservable<T, R> extends ValueObservable<R> {
         this.executor = executor;
     }
 
-    private Observer<T> observer = value -> emit(transformation.transform(value));
+    private final Observer<T> observer = value -> emit(transformation.transform(value));
 
     @Override
     protected void onActive() {

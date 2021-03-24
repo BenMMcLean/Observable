@@ -12,7 +12,7 @@ public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
     private final Observable<T> delegate;
     private AsyncTransformation<T,R> transformation;
     private Observable<R> transformationDelegate;
-    private Executor executor;
+    private final Executor executor;
 
     public AsyncTransformObservable(Observable<T> delegate, AsyncTransformation<T, R> transformation, Executor executor) {
         this.delegate = delegate;
@@ -20,8 +20,8 @@ public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
         this.executor = executor;
     }
 
-    private Observer<R> transformationObserver = this::emit;
-    private Observer<T> observer = value -> {
+    private final Observer<R> transformationObserver = this::emit;
+    private final Observer<T> observer = value -> {
         if (transformationDelegate != null) {
             transformationDelegate.removeObserver(transformationObserver);
         }

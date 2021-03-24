@@ -22,7 +22,7 @@ public abstract class SimpleAsyncTransformation<T,R> implements AsyncTransformat
 
     protected abstract Observable<R> transformSuccess(T in);
     protected Observable<R> transformFailure(Throwable in) {
-        return new SingleValueObservable(new ExceptionOrValue.Exception<R>(in));
+        return new SingleValueObservable<>(new ExceptionOrValue.Exception<>(in));
     }
 
 }

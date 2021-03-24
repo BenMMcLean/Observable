@@ -1,7 +1,6 @@
 package cl.benm.observable.unwrap
 
 import cl.benm.observable.Observable
-import cl.benm.observable.Observer
 import java.util.concurrent.Executor
 
 fun <T,R> Observable<T>.transformOrPropagate(transformation: (T) -> R, executor: Executor): Observable<R> {
