@@ -15,19 +15,29 @@ import cl.benm.observable.AbstractObservable;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observer;
 
+/**
+ * A basic raw implementation of the Observable. Emission is achieved by calling emit()
+ * @param <T> The type of the Observable
+ */
 public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
+    // List of non lifecycle observers
     private final List<Observer<T>> observerList = new ArrayList<>();
+    // Map of lifecycle observers
     private final Map<LifecycleOwner, List<Observer<T>>> lifecycleOwnerListMap = new HashMap<>();
+    // The executors to use for a given observer
     private final Map<Observer<T>, Executor> executorMap = new HashMap<>();
 
     private ExceptionOrValue<T> lastValue = null;
     private boolean emittedFirst = false;
     boolean active = false;
 
+    /**
+     * Emit a value to observers
+     * @param value The value to emit
+     */
     @Override
     protected void emit(ExceptionOrValue<T> value) {
-        super.emit(value);
         lastValue = value;
         emittedFirst = true;
 
@@ -81,6 +91,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     @Override
     public void removeObserver(Observer<T> observer) {
+        executorMap.remove(observer);
         if (observerList.remove(observer)) {
             return;
         }
@@ -97,11 +108,20 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     @Override
     public void removeObservers(LifecycleOwner lifecycleOwner) {
+        List<Observer<T>> l = lifecycleOwnerListMap.get(lifecycleOwner);
+        if (l != null) {
+            for (Observer<T> o: l) executorMap.remove(o);
+        }
+
         lifecycleOwnerListMap.remove(lifecycleOwner);
         lifecycleOwner.getLifecycle().removeObserver(lifecycleObserver);
         updateActive();
     }
 
+    /**
+     * Check if there are active observers. Generally preferable to use the cached value "active"
+     * @return If there are active observers
+     */
     protected boolean hasActiveObservers() {
         if (!observerList.isEmpty()) {
             return true;
@@ -123,7 +143,13 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         }
     }
 
+    /**
+     * Called once when state changes from no active Observers to 1 or more active Observers
+     */
     protected void onActive() {}
+    /**
+     * Called once when state changes from 1 or more active Observers to no active Observers
+     */
     protected void onInactive() {}
 
     private final LifecycleObserver lifecycleObserver = (LifecycleEventObserver) (source, event) -> {
