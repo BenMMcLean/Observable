@@ -18,11 +18,9 @@ import cl.benm.observable.Observer;
 public class FutureObservable<T> extends AbstractObservable<T> {
 
     private final ListenableFuture<T> delegate;
-    private final Executor executor;
 
-    public FutureObservable(ListenableFuture<T> delegate, Executor executor) {
+    public FutureObservable(ListenableFuture<T> delegate) {
         this.delegate = delegate;
-        this.executor = executor;
     }
 
     @Override
@@ -31,7 +29,7 @@ public class FutureObservable<T> extends AbstractObservable<T> {
     }
 
     @Override
-    public void observe(Observer<T> observer) {
+    public void observe(Observer<T> observer, Executor executor) {
         FluentFuture.from(delegate).addCallback(new FutureCallback<T>() {
             @Override
             public void onSuccess(@NullableDecl T result) {
@@ -46,13 +44,13 @@ public class FutureObservable<T> extends AbstractObservable<T> {
     }
 
     @Override
-    public void observe(Observer<T> observer, LifecycleOwner lifecycleOwner) {
-        observe(observer);
+    public void observe(Observer<T> observer, LifecycleOwner lifecycleOwner, Executor executor) {
+        observe(observer, executor);
     }
 
     @Override
-    public void observeOnce(Observer<T> observer) {
-        observe(observer);
+    public void observeOnce(Observer<T> observer, Executor executor) {
+        observe(observer, executor);
     }
 
     @Override
