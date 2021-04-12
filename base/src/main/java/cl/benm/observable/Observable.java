@@ -68,4 +68,16 @@ public interface Observable<T> {
      */
     <R> Observable<R> transformAsync(AsyncTransformation<T,R> transformation, Executor executor);
 
+    /**
+     * Return if the first element has been emitted
+     * @return If the first element has been emitted
+     */
+    boolean hasEmittedFirst();
+
+    /**
+     * Return the last emitted value
+     * @return The last emitted value
+     */
+    ExceptionOrValue<T> value();
+
 }

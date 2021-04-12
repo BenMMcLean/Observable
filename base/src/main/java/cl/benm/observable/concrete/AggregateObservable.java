@@ -1,0 +1,63 @@
+package cl.benm.observable.concrete;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import cl.benm.observable.ExceptionOrValue;
+import cl.benm.observable.Observable;
+import cl.benm.observable.Observer;
+
+public abstract class AggregateObservable<IN, T> extends ValueObservable<T> {
+
+    protected List<Observable<IN>> delegates;
+    protected Executor executor;
+
+    public AggregateObservable(List<Observable<IN>> delegates, Executor executor) {
+        this.delegates = delegates;
+        this.executor = executor;
+    }
+
+    private final Observer<IN> delegateObserver = value -> {
+        boolean allEmitted = true;
+        List<ExceptionOrValue<IN>> values = new ArrayList<>();
+
+        for (Observable<IN> observable: delegates) {
+            if (observable.hasEmittedFirst()) {
+                values.add(observable.value());
+            } else {
+                allEmitted = false;
+                values.add(null);
+            }
+        }
+
+        onUpdate(values);
+        if (allEmitted) {
+            onAllUpdate(values);
+        }
+    };
+
+    protected void onUpdate(List<ExceptionOrValue<IN>> value) {
+
+    }
+
+    protected void onAllUpdate(List<ExceptionOrValue<IN>> value) {
+
+    }
+
+    @Override
+    protected void onActive() {
+        super.onActive();
+        for (Observable<IN> delegate: delegates) {
+            delegate.observe(delegateObserver, executor);
+        }
+    }
+
+    @Override
+    protected void onInactive() {
+        super.onInactive();
+        for (Observable<IN> delegate: delegates) {
+            delegate.removeObserver(delegateObserver);
+        }
+    }
+}

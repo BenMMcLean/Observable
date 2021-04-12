@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import cl.benm.observable.AbstractObservable;
+import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observer;
 
@@ -150,6 +151,16 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
      * Called once when state changes from 1 or more active Observers to no active Observers
      */
     protected void onInactive() {}
+
+    @Override
+    public boolean hasEmittedFirst() {
+        return emittedFirst;
+    }
+
+    @Override
+    public ExceptionOrValue<T> value() {
+        return lastValue;
+    }
 
     private final LifecycleObserver lifecycleObserver = (LifecycleEventObserver) (source, event) -> {
         if (inEmittableState(source) && emittedFirst) {
