@@ -36,13 +36,13 @@ class TransformTest {
         )
         var emissionIndex = 0
 
-        val emitter = EmissionOverTimeObservable<Int>(emissions.map { ExceptionOrValue.Value(it) }, 10)
-            .transform(object: SimpleTransformation<Int, Int>() {
-                override fun transformSuccess(`in`: Int?): Int {
-                    return `in`!!+1
-                }
-            }, DirectExecutor.INSTANCE)
-        emitter.observe(object: SimpleObserver<Int>() {
+        val emitter = EmissionOverTimeObservable<Int>(emissions.map { ExceptionOrValue.Value(it) })
+        val transformed = emitter.transform(object: SimpleTransformation<Int, Int>() {
+            override fun transformSuccess(`in`: Int?): Int {
+                return `in`!!+1
+            }
+        }, DirectExecutor.INSTANCE)
+        transformed.observe(object: SimpleObserver<Int>() {
             override fun onSuccess(value: Int?) {
                 Assert.assertEquals(value, emissions[emissionIndex++]+1)
             }
@@ -51,6 +51,7 @@ class TransformTest {
                 throw throwable!!
             }
         }, DirectExecutor.INSTANCE)
+        emitter.start()
     }
 
 }

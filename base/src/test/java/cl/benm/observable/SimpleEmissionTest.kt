@@ -22,14 +22,14 @@ class SimpleEmissionTest {
         }, DirectExecutor.INSTANCE)
     }
 
-    @Test(timeout = 500)
+    @Test(timeout = 10000)
     fun multipleEmission() {
         val emissions = listOf(
             "Test",
             "Test 2",
             "Test 3"
         )
-        val emitter = EmissionOverTimeObservable<String>(emissions.map { ExceptionOrValue.Value(it) }, 10)
+        val emitter = EmissionOverTimeObservable<String>(emissions.map { ExceptionOrValue.Value(it) }.toList())
         var emissionIndex = 0
         emitter.observe(object: SimpleObserver<String>() {
             override fun onSuccess(value: String?) {
@@ -40,6 +40,7 @@ class SimpleEmissionTest {
                 throw throwable!!
             }
         }, DirectExecutor.INSTANCE)
+        emitter.start()
     }
 
 }
