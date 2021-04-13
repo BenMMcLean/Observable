@@ -7,6 +7,13 @@ import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
 
+/**
+ * An Observable that mediates between a delegated Observable and some function's
+ * outputted Observable.
+ * @param <T> The input type of the Observable
+ * @param <R> The output type
+ * @see cl.benm.observable.base.MediatedObservable
+ */
 public abstract class AsyncMediatedObservable<T,R> extends MediatedObservable<T,R> {
 
     protected Observable<R> asyncDelegate;
@@ -15,6 +22,10 @@ public abstract class AsyncMediatedObservable<T,R> extends MediatedObservable<T,
         super(delegate, executor);
     }
 
+    /**
+     * Provide a new Observable to mediate
+     * @param async The new observable
+     */
     protected void emit(Observable<R> async) {
         if (asyncDelegate != null) {
             asyncDelegate.removeObserver(asyncObserver);
@@ -26,6 +37,9 @@ public abstract class AsyncMediatedObservable<T,R> extends MediatedObservable<T,
         }
     }
 
+    /**
+     * Handle the output of the async Observable
+     */
     protected Observer<R> asyncObserver = new Observer<R>() {
         @Override
         public void onChanged(R value) {
