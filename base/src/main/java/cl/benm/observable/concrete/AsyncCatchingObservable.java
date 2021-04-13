@@ -9,15 +9,10 @@ import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
 
 /**
- * Transform the emissions of an Observable into another Observable.
- * This class essentially mediates between two Observables, the delegate
- * and the last Observable output by the transformation. Upon the emission
- * of a value by the delegate, the value is passed to the transformation.
- * The output of that transformation is stored and observed while this
- * Observable has active observers. Upon the emission of a value by the
- * transformation Observable, said value is emitted to the subscribers
- * of this Observable.
- * @param <T> The input type of the transformation
+ * Catch an exception passed down the Observable chain and transform it asynchronously
+ * @param <T> The input/output type of the Observable
+ * @param <E> The exception to catch
+ * @see cl.benm.observable.concrete.AsyncTransformObservable
  */
 public class AsyncCatchingObservable<T, E extends Throwable> extends ValueObservable<T> {
 
@@ -32,6 +27,7 @@ public class AsyncCatchingObservable<T, E extends Throwable> extends ValueObserv
      * @param delegate The Observable this Observable will be chained to
      * @param transformation The transformation to apply
      * @param executor The thread to execute the transformation on
+     * @param exception The type of exception to catch
      */
     public AsyncCatchingObservable(Observable<T> delegate, Class<E> exception, AsyncTransformation<E, T> transformation, Executor executor) {
         this.delegate = delegate;

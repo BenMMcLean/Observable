@@ -9,6 +9,11 @@ import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
 
+/**
+ * Aggregates a list of Observers for an implementer to transform and return
+ * @param <IN> The type of the input Observables
+ * @param <T> The output type of the Observable
+ */
 public abstract class AggregateObservable<IN, T> extends ValueObservable<T> {
 
     protected List<Observable<IN>> delegates;
@@ -50,10 +55,18 @@ public abstract class AggregateObservable<IN, T> extends ValueObservable<T> {
         }
     }
 
+    /**
+     * When any Observer emits
+     * @param value The collected values
+     */
     protected void onUpdate(List<ExceptionOrValue<IN>> value) {
 
     }
 
+    /**
+     * Once all Observers have emitted at least once, begin emitting all changes
+     * @param value The collected values
+     */
     protected void onAllUpdate(List<ExceptionOrValue<IN>> value) {
 
     }

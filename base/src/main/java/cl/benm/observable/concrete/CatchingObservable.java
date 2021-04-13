@@ -10,7 +10,8 @@ import cl.benm.observable.Transformation;
 
 /**
  * Transforms and emits the exception emissions of a given Observable
- * @param <T> The input type
+ * @param <T> The input/output type
+ * @param <E> The exception to catch
  */
 public class CatchingObservable<T,E extends Throwable> extends ValueObservable<T> {
 
@@ -24,6 +25,7 @@ public class CatchingObservable<T,E extends Throwable> extends ValueObservable<T
      * @param delegate The Observable this Observable will be chained to
      * @param transformation The transformation to apply
      * @param executor The thread to execute the transformation on
+     * @param exception The type of exception to catch
      */
     public CatchingObservable(Observable<T> delegate, Class<E> exception, Transformation<E, T> transformation, Executor executor) {
         this.delegate = delegate;

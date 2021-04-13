@@ -8,6 +8,11 @@ import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 
+/**
+ * Combines a list of Observable results based on a {@link Combiner}
+ * @param <IN> The input type
+ * @param <T> The output type
+ */
 public class CombinedObservable<IN, T> extends AggregateObservable<IN, T> {
 
     Combiner<ExceptionOrValue<IN>, ExceptionOrValue<T>> combiner;

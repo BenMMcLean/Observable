@@ -7,6 +7,11 @@ import cl.benm.observable.Combiner;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observer;
 
+/**
+ * A combiner that discards inputs with an Exception
+ * @param <IN> The input type
+ * @param <OUT> The output type
+ */
 public abstract class SimpleCombiner<IN, OUT> implements Combiner<ExceptionOrValue<IN>, ExceptionOrValue<OUT>> {
 
     @Override

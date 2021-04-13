@@ -8,8 +8,19 @@ import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.helpers.IllegalExceptionOrValueException;
 
+/**
+ * Aggregates a list of Observable into a list of their values. If an
+ * Observable emits an exception, the exception will be passed down
+ * the chain rather than the list of values.
+ * @param <T> The type of the Observables
+ */
 public class ListObservable<T> extends AggregateObservable<T, List<T>> {
 
+    /**
+     * Instantiate a new ListObservable
+     * @param delegates The observables to aggregate
+     * @param executor The executor to execute aggregation with
+     */
     public ListObservable(List<Observable<T>> delegates, Executor executor) {
         super(delegates, executor);
     }
