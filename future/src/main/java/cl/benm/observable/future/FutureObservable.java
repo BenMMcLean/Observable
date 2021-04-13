@@ -22,7 +22,6 @@ import cl.benm.observable.Observer;
 public class FutureObservable<T> extends AbstractObservable<T> {
 
     private final ListenableFuture<T> delegate;
-    private boolean emittedFirst = false;
     private ExceptionOrValue<T> value = null;
 
     /**
@@ -43,14 +42,12 @@ public class FutureObservable<T> extends AbstractObservable<T> {
         FluentFuture.from(delegate).addCallback(new FutureCallback<T>() {
             @Override
             public void onSuccess(@NullableDecl T result) {
-                emittedFirst = true;
                 value = new ExceptionOrValue.Value<>(result);
                 observer.onChanged(result);
             }
 
             @Override
             public void onFailure(Throwable t) {
-                emittedFirst = true;
                 value = new ExceptionOrValue.Exception<>(t);
                 observer.onException(t);
             }
@@ -75,7 +72,7 @@ public class FutureObservable<T> extends AbstractObservable<T> {
 
     @Override
     public boolean hasEmittedFirst() {
-        return emittedFirst;
+        return delegate.isDone();
     }
 
     @Override
