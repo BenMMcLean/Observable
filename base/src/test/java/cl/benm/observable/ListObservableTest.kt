@@ -35,4 +35,21 @@ class ListObservableTest {
         emitter3.start()
     }
 
+    @Test(timeout = 500)
+    fun exceptionFallover() {
+        val emitter1 = Observables.immediateObservable("Test")
+        val emitter2 = Observables.immediateFailedObservable<String>(Throwable())
+        val emitter3 = Observables.immediateObservable("Test")
+
+        val combined = Observables.allAsList(listOf(emitter1, emitter2, emitter3), DirectExecutor.INSTANCE)
+
+        combined.observe(object: Observer<List<String>> {
+            override fun onChanged(value: List<String>?) {
+                Assert.fail()
+            }
+
+            override fun onException(exception: Throwable?) {}
+        }, DirectExecutor.INSTANCE)
+    }
+
 }
