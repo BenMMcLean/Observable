@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import cl.benm.observable.ExceptionOrValue
 import cl.benm.observable.Observable
+import cl.benm.observable.helpers.IllegalExceptionOrValueException
 import java.util.concurrent.Executor
 
 fun <T> Observable<T>.toLiveData(executor: Executor): LiveData<ExceptionOrValue<T>> {
@@ -21,7 +22,7 @@ fun <T> LiveData<ExceptionOrValue<T>>.discardExceptions(log: Boolean = true): Li
                 null
             }
             is ExceptionOrValue.Value -> it.value
-            else -> throw IllegalArgumentException("Value provided to discardExceptions(Boolean) must be an ExceptionOrValue.Value or ExceptionOrValue.Exception!")
+            else -> throw IllegalExceptionOrValueException("discardExceptions(Boolean)")
         }
     }
 }

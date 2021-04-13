@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
@@ -55,6 +56,15 @@ public abstract class AggregateObservable<IN, T> extends ValueObservable<T> {
 
     protected void onAllUpdate(List<ExceptionOrValue<IN>> value) {
 
+    }
+
+    @Override
+    public EmissionType getEmissionType() {
+        boolean allSingle = true;
+        for (Observable<IN> o: delegates) {
+            allSingle &= o.getEmissionType() == EmissionType.SINGLE;
+        }
+        return (allSingle) ? EmissionType.SINGLE : EmissionType.MULTIPLE;
     }
 
     @Override
