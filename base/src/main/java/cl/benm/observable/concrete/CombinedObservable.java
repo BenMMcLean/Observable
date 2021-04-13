@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import cl.benm.observable.Combiner;
-import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
+import cl.benm.observable.base.AggregateObservable;
 
 /**
  * Combines a list of Observable results based on a {@link Combiner}

@@ -6,6 +6,7 @@ import java.util.concurrent.Executor;
 
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
+import cl.benm.observable.base.AggregateObservable;
 import cl.benm.observable.helpers.IllegalExceptionOrValueException;
 
 /**

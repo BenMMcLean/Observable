@@ -1,4 +1,4 @@
-package cl.benm.observable.concrete;
+package cl.benm.observable.base;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
@@ -33,7 +33,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private ExceptionOrValue<T> lastEmission = null;
     private boolean emittedFirst = false;
-    boolean active = false;
+    protected boolean active = false;
 
     /**
      * Emit a value to observers

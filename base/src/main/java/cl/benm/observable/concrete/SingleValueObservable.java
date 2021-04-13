@@ -2,6 +2,7 @@ package cl.benm.observable.concrete;
 
 import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
+import cl.benm.observable.base.ValueObservable;
 
 /**
  * Outputs a single value known at construction time

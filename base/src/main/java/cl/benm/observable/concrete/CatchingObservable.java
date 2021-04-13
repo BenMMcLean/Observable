@@ -7,16 +7,16 @@ import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
 import cl.benm.observable.Transformation;
+import cl.benm.observable.base.MediatedObservable;
+import cl.benm.observable.base.ValueObservable;
 
 /**
  * Transforms and emits the exception emissions of a given Observable
  * @param <T> The input/output type
  * @param <E> The exception to catch
  */
-public class CatchingObservable<T,E extends Throwable> extends ValueObservable<T> {
+public class CatchingObservable<T,E extends Throwable> extends MediatedObservable<T,T> {
 
-    private final Observable<T> delegate;
-    private final Executor executor;
     private final Transformation<E, T> transformation;
     private final Class<E> exception;
 
@@ -28,28 +28,27 @@ public class CatchingObservable<T,E extends Throwable> extends ValueObservable<T
      * @param exception The type of exception to catch
      */
     public CatchingObservable(Observable<T> delegate, Class<E> exception, Transformation<E, T> transformation, Executor executor) {
-        this.delegate = delegate;
+        super(delegate, executor);
         this.exception = exception;
         this.transformation = transformation;
-        this.executor = executor;
+
+        observer = new Observer<T>() {
+            @Override
+            public void onChanged(T value) {
+                emit(new ExceptionOrValue.Value<>(value));
+            }
+
+            @Override
+            public void onException(Throwable exception1) {
+                doTransform(exception1);
+            }
+        };
     }
-
-    private final Observer<T> observer = new Observer<T>() {
-        @Override
-        public void onChanged(T value) {
-            emit(new ExceptionOrValue.Value<>(value));
-        }
-
-        @Override
-        public void onException(Throwable exception) {
-            doTransform(exception);
-        }
-    };
 
     private void doTransform(Throwable throwable) {
         try {
             if (throwable.getClass() == exception) {
-                emit(new ExceptionOrValue.Value<T>(transformation.transform((E) throwable)));
+                emit(new ExceptionOrValue.Value<>(transformation.transform((E) throwable)));
             } else {
                 emit(new ExceptionOrValue.Exception<>(throwable));
             }
@@ -58,20 +57,4 @@ public class CatchingObservable<T,E extends Throwable> extends ValueObservable<T
         }
     }
 
-    @Override
-    protected void onActive() {
-        super.onActive();
-        delegate.observe(observer, executor);
-    }
-
-    @Override
-    protected void onInactive() {
-        super.onInactive();
-        delegate.removeObserver(observer);
-    }
-
-    @Override
-    public EmissionType getEmissionType() {
-        return delegate.getEmissionType();
-    }
 }
