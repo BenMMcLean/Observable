@@ -12,6 +12,10 @@ import java.util.concurrent.Executor;
 
 import cl.benm.observable.Observer;
 
+/**
+ * Manages a collection of Observers
+ * @param <T> The type of the Observers
+ */
 public class ObserverManager<T> {
 
     private HashMap<LifecycleOwner, List<ObserverWrapper<T>>> observers = new HashMap<>();
@@ -20,11 +24,24 @@ public class ObserverManager<T> {
         observers.put(null, new ArrayList<>());
     }
 
-    boolean add(Observer<T> o, Executor executor) {
+    /**
+     * Add an Observer to the manager
+     * @param o The Observer to add
+     * @param executor The executor of the Observer
+     * @return If the Observer was the first of it's LifecycleOwner (in this case, null)
+     */
+    public boolean add(Observer<T> o, Executor executor) {
         return add(o, null, executor);
     }
 
-    boolean add(Observer<T> o, LifecycleOwner lifecycleOwner, Executor executor) {
+    /**
+     * Add an Observer to the manager
+     * @param o The Observer to add
+     * @param lifecycleOwner The lifecycle to manage this Observer
+     * @param executor The executor of the Observer
+     * @return If the Observer was the first of it's LifecycleOwner
+     */
+    public boolean add(Observer<T> o, LifecycleOwner lifecycleOwner, Executor executor) {
         List<ObserverWrapper<T>> obs = observers.get(lifecycleOwner);
 
         if (obs == null) {
@@ -39,7 +56,11 @@ public class ObserverManager<T> {
         return empty;
     }
 
-    void remove(Observer<T> o) {
+    /**
+     * Remove an Observer
+     * @param o The Observer to remove
+     */
+    public void remove(Observer<T> o) {
         Iterator<Map.Entry<LifecycleOwner, List<ObserverWrapper<T>>>> owsI = observers.entrySet().iterator();
         while (owsI.hasNext()) {
             boolean exit = false;
@@ -60,21 +81,39 @@ public class ObserverManager<T> {
         }
     }
 
-    void remove(LifecycleOwner owner) {
+    /**
+     * Remove all Observers attached to a lifecycle
+     * @param owner The lifecycle to remove Observers from
+     */
+    public void remove(LifecycleOwner owner) {
         if (owner == null) return;
 
         observers.remove(owner);
     }
 
-    Map<LifecycleOwner, List<ObserverWrapper<T>>> getObservers() {
+    /**
+     * Get all Observers
+     * @return All Observers
+     */
+    public Map<LifecycleOwner, List<ObserverWrapper<T>>> getObservers() {
         return new HashMap<>(observers);
     }
 
-    List<ObserverWrapper<T>> getObservers(LifecycleOwner lifecycleOwner) {
+    /**
+     * Get Observers attached to a specific lifecycle
+     * @param lifecycleOwner The lifecycle to fetch Observers
+     * @return Observers attached to a specific lifecycle
+     */
+    public List<ObserverWrapper<T>> getObservers(LifecycleOwner lifecycleOwner) {
         return new ArrayList<>(observers.get(lifecycleOwner));
     }
 
-    Executor getExecutor(Observer<T> observer) {
+    /**
+     * Get the executor of an Observer
+     * @param observer The Observer to get an executor of
+     * @return The executor of an Observer
+     */
+    public Executor getExecutor(Observer<T> observer) {
         for (List<ObserverWrapper<T>> ows: observers.values()) {
             for (ObserverWrapper<T> ow: ows) {
                 if (observer == ow.observer.get()) {
@@ -85,6 +124,11 @@ public class ObserverManager<T> {
         return null;
     }
 
+    /**
+     * Wraps an Observer with the data required to execute it, in this case
+     * an Executor instance
+     * @param <T> The type of the Observer
+     */
     public static class ObserverWrapper<T> {
 
         private final WeakReference<Observer<T>> observer;
@@ -95,10 +139,18 @@ public class ObserverManager<T> {
             this.executor = executor;
         }
 
+        /**
+         * Returns a weak reference to an Observer
+         * @return A weak reference to an Observer
+         */
         public WeakReference<Observer<T>> getObserver() {
             return observer;
         }
 
+        /**
+         * Returns an executor
+         * @return An executor
+         */
         public Executor getExecutor() {
             return executor;
         }
