@@ -16,11 +16,11 @@ Then, include the modules as required
 ```groovy
 dependencies {
     // The basic Observable interface and helper classes
-    implementation 'com.github.BenMMcLean.Observable:base:1.0.0'
+    implementation 'com.github.BenMMcLean.Observable:base:1.0.3'
     // The LiveData Observable wrappers
-    implementation 'com.github.BenMMcLean.Observable:livedata:1.0.0'
+    implementation 'com.github.BenMMcLean.Observable:livedata:1.0.3'
     // The ListenableFuture Observable wrappers
-    implementation 'com.github.BenMMcLean.Observable:future:1.0.0'
+    implementation 'com.github.BenMMcLean.Observable:future:1.0.3'
 }
 ```
 
