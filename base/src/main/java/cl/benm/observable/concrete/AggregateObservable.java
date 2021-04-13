@@ -18,7 +18,19 @@ public abstract class AggregateObservable<IN, T> extends ValueObservable<T> {
         this.executor = executor;
     }
 
-    private final Observer<IN> delegateObserver = value -> {
+    private final Observer<IN> delegateObserver = new Observer<IN>() {
+        @Override
+        public void onChanged(IN value) {
+            onObservationChange();
+        }
+
+        @Override
+        public void onException(Throwable exception) {
+            onObservationChange();
+        }
+    };
+
+    private void onObservationChange() {
         boolean allEmitted = true;
         List<ExceptionOrValue<IN>> values = new ArrayList<>();
 
@@ -35,7 +47,7 @@ public abstract class AggregateObservable<IN, T> extends ValueObservable<T> {
         if (allEmitted) {
             onAllUpdate(values);
         }
-    };
+    }
 
     protected void onUpdate(List<ExceptionOrValue<IN>> value) {
 

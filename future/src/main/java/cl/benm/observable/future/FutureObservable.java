@@ -44,13 +44,15 @@ public class FutureObservable<T> extends AbstractObservable<T> {
             @Override
             public void onSuccess(@NullableDecl T result) {
                 emittedFirst = true;
-                observer.onChanged(value = new ExceptionOrValue.Value<>(result));
+                value = new ExceptionOrValue.Value<>(result);
+                observer.onChanged(result);
             }
 
             @Override
             public void onFailure(Throwable t) {
                 emittedFirst = true;
-                observer.onChanged(value = new ExceptionOrValue.Exception<>(t));
+                value = new ExceptionOrValue.Exception<>(t);
+                observer.onException(t);
             }
         }, executor);
     }

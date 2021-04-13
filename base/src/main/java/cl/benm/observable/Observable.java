@@ -68,6 +68,11 @@ public interface Observable<T> {
      */
     <R> Observable<R> transformAsync(AsyncTransformation<T,R> transformation, Executor executor);
 
+
+    <E extends Throwable> Observable<T> catching(Class<E> exception, Transformation<E, T> catching, Executor executor);
+
+    <E extends Throwable> Observable<T> catchingAsync(Class<E> exception, AsyncTransformation<E, T> catchingAsync, Executor executor);
+
     /**
      * Return if the first element has been emitted
      * @return If the first element has been emitted

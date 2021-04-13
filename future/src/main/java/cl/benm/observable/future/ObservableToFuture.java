@@ -7,6 +7,7 @@ import java.util.concurrent.Executor;
 
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
+import cl.benm.observable.Observer;
 
 /**
  * Convert an Observable to a ListenableFuture
@@ -23,11 +24,15 @@ public class ObservableToFuture {
     public static <T> ListenableFuture<T> toFuture(Observable<T> observable, Executor executor) {
         SettableFuture<T> future = SettableFuture.create();
 
-        observable.observeOnce(value -> {
-            if (value instanceof ExceptionOrValue.Value) {
-                future.set(((ExceptionOrValue.Value<T>) value).getValue());
-            } else if (value instanceof ExceptionOrValue.Exception) {
-                future.setException(((ExceptionOrValue.Exception<T>) value).getThrowable());
+        observable.observeOnce(new Observer<T>() {
+            @Override
+            public void onChanged(T value) {
+                future.set(value);
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                future.setException(exception);
             }
         }, executor);
 
