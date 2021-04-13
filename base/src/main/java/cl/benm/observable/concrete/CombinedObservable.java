@@ -18,15 +18,6 @@ public class CombinedObservable<IN, T> extends AggregateObservable<IN, T> {
     }
 
     @Override
-    public EmissionType getEmissionType() {
-        boolean allSingle = true;
-        for (Observable<IN> o: delegates) {
-            allSingle &= o.getEmissionType() == EmissionType.SINGLE;
-        }
-        return (allSingle) ? EmissionType.SINGLE : EmissionType.MULTIPLE;
-    }
-
-    @Override
     protected void onAllUpdate(List<ExceptionOrValue<IN>> value) {
         super.onAllUpdate(value);
         emit(combiner.combine(value));
