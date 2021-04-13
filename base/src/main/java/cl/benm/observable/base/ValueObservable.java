@@ -5,10 +5,12 @@ import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 
 import cl.benm.observable.AbstractObservable;
@@ -24,12 +26,7 @@ import cl.benm.observable.Transformation;
  */
 public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
-    // List of non lifecycle observers
-    private final List<Observer<T>> observerList = new ArrayList<>();
-    // Map of lifecycle observers
-    private final Map<LifecycleOwner, List<Observer<T>>> lifecycleOwnerListMap = new HashMap<>();
-    // The executors to use for a given observer
-    private final Map<Observer<T>, Executor> executorMap = new HashMap<>();
+    ObserverManager<T> observerManager = new ObserverManager<>();
 
     private ExceptionOrValue<T> lastEmission = null;
     private boolean emittedFirst = false;
@@ -43,22 +40,26 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         lastEmission = value;
         emittedFirst = true;
 
-        emitToList(value, new ArrayList<>(observerList)); // Create a shallow copy
-        for (Map.Entry<LifecycleOwner, List<Observer<T>>> l: new HashMap<>(lifecycleOwnerListMap).entrySet()) {
-            if (inEmittableState(l.getKey())) {
+        for (Map.Entry<LifecycleOwner, List<ObserverManager.ObserverWrapper<T>>> l: new HashMap<>(observerManager.getObservers()).entrySet()) {
+            if (l.getKey() == null || inEmittableState(l.getKey())) {
                 emitToList(value, new ArrayList<>(l.getValue()));
             }
         }
     }
 
-    private void emitToList(ExceptionOrValue<T> value, List<Observer<T>> list) {
-        for (Observer<T> o : list) {
+    private void emitToList(ExceptionOrValue<T> value, List<ObserverManager.ObserverWrapper<T>> list) {
+        for (ObserverManager.ObserverWrapper<T> o : list) {
             emit(value, o);
         }
     }
 
-    private void emit(ExceptionOrValue<T> value, Observer<T> observer) {
-        Executor executor = executorMap.get(observer);
+    private void emit(ExceptionOrValue<T> value, ObserverManager.ObserverWrapper<T> observer) {
+        Observer<T> localObserver = observer.getObserver().get();
+        if (localObserver == null) return;
+        emit(value, localObserver, observer.getExecutor());
+    }
+
+    private void emit(ExceptionOrValue<T> value, Observer<T> observer, Executor executor) {
         executor.execute(() -> {
             if (value instanceof ExceptionOrValue.Value) {
                 observer.onChanged(((ExceptionOrValue.Value<T>) value).getValue());
@@ -70,58 +71,32 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     @Override
     public void observe(Observer<T> observer, Executor executor) {
-        observerList.add(observer);
-        executorMap.put(observer, executor);
+        observerManager.add(observer, executor);
         if (emittedFirst) {
-            emit(lastEmission, observer);
+            emit(lastEmission, observer, executor);
         }
         updateActive();
     }
 
     @Override
     public void observe(Observer<T> observer, LifecycleOwner lifecycleOwner, Executor executor) {
-        List<Observer<T>> observers = lifecycleOwnerListMap.get(lifecycleOwner);
-
-        if (observers == null) {
-            observers = new ArrayList<>();
-            lifecycleOwnerListMap.put(lifecycleOwner, observers);
-        }
-
-        if (observers.isEmpty()) lifecycleOwner.getLifecycle().addObserver(lifecycleObserver);
-
-        observers.add(observer);
+        if (observerManager.add(observer, lifecycleOwner, executor)) lifecycleOwner.getLifecycle().addObserver(lifecycleObserver);
 
         if (emittedFirst && inEmittableState(lifecycleOwner)) {
-            emit(lastEmission, observer);
+            emit(lastEmission, observer, executor);
         }
         updateActive();
     }
 
     @Override
     public void removeObserver(Observer<T> observer) {
-        executorMap.remove(observer);
-        if (observerList.remove(observer)) {
-            return;
-        }
-
-        for (Map.Entry<LifecycleOwner, List<Observer<T>>> l: lifecycleOwnerListMap.entrySet()) {
-            List<Observer<T>> v = l.getValue();
-            if (v.remove(observer)) {
-                if (v.isEmpty()) l.getKey().getLifecycle().removeObserver(lifecycleObserver);
-                return;
-            }
-        }
+        observerManager.remove(observer);
         updateActive();
     }
 
     @Override
     public void removeObservers(LifecycleOwner lifecycleOwner) {
-        List<Observer<T>> l = lifecycleOwnerListMap.get(lifecycleOwner);
-        if (l != null) {
-            for (Observer<T> o: l) executorMap.remove(o);
-        }
-
-        lifecycleOwnerListMap.remove(lifecycleOwner);
+        observerManager.remove(lifecycleOwner);
         lifecycleOwner.getLifecycle().removeObserver(lifecycleObserver);
         updateActive();
     }
@@ -131,11 +106,12 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
      * @return If there are active observers
      */
     protected boolean hasActiveObservers() {
-        if (!observerList.isEmpty()) {
+        Map<LifecycleOwner, List<ObserverManager.ObserverWrapper<T>>> observers = observerManager.getObservers();
+        if (!observers.get(null).isEmpty()) {
             return true;
         }
-        for (Map.Entry<LifecycleOwner, List<Observer<T>>> l: lifecycleOwnerListMap.entrySet()) {
-            if (inEmittableState(l.getKey()) && !l.getValue().isEmpty()) return true;
+        for (Map.Entry<LifecycleOwner, List<ObserverManager.ObserverWrapper<T>>> l: observers.entrySet()) {
+            if (l.getKey() != null && inEmittableState(l.getKey()) && !l.getValue().isEmpty()) return true;
         }
         return false;
     }
@@ -172,15 +148,9 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private final LifecycleObserver lifecycleObserver = (LifecycleEventObserver) (source, event) -> {
         if (inEmittableState(source) && emittedFirst) {
-            List<Observer<T>> os = lifecycleOwnerListMap.get(source);
+            List<ObserverManager.ObserverWrapper<T>> os = observerManager.getObservers(source);
             if (os != null) {
-                for(Observer<T> o: os) {
-                    if (lastEmission instanceof ExceptionOrValue.Value) {
-                        o.onChanged(((ExceptionOrValue.Value<T>) lastEmission).getValue());
-                    } else if (lastEmission instanceof ExceptionOrValue.Exception) {
-                        o.onException(((ExceptionOrValue.Exception<T>) lastEmission).getThrowable());
-                    }
-                }
+                emitToList(lastEmission, os);
             }
         } else if (event == Lifecycle.Event.ON_DESTROY) {
             removeObservers(source);
