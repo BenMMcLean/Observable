@@ -43,16 +43,16 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         lastEmission = value;
         emittedFirst = true;
 
-        emitToList(value, observerList);
-        for (Map.Entry<LifecycleOwner, List<Observer<T>>> l: lifecycleOwnerListMap.entrySet()) {
+        emitToList(value, new ArrayList<>(observerList)); // Create a shallow copy
+        for (Map.Entry<LifecycleOwner, List<Observer<T>>> l: new HashMap<>(lifecycleOwnerListMap).entrySet()) {
             if (inEmittableState(l.getKey())) {
-                emitToList(value, l.getValue());
+                emitToList(value, new ArrayList<>(l.getValue()));
             }
         }
     }
 
     private void emitToList(ExceptionOrValue<T> value, List<Observer<T>> list) {
-        for (Observer<T> o: list) {
+        for (Observer<T> o : list) {
             emit(value, o);
         }
     }

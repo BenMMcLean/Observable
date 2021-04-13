@@ -5,7 +5,9 @@ import androidx.lifecycle.LifecycleOwner;
 
 import java.util.concurrent.Executor;
 
+import cl.benm.observable.concrete.AsyncCatchingObservable;
 import cl.benm.observable.concrete.AsyncTransformObservable;
+import cl.benm.observable.concrete.CatchingObservable;
 import cl.benm.observable.concrete.TransformObservable;
 
 /**
@@ -44,13 +46,13 @@ public abstract class AbstractObservable<T> implements Observable<T> {
     }
 
     @Override
-    public <R> Observable<R> catching(Transformation<? extends Throwable, R> catching, Executor executor) {
-        return null;
+    public <E extends Throwable> Observable<T> catching(Class<E> exception, Transformation<E, T> catching, Executor executor) {
+        return new CatchingObservable<>(this, exception, catching, executor);
     }
 
     @Override
-    public <R> Observable<R> catchingAsync(AsyncTransformation<? extends Throwable, R> catchingAsync, Executor executor) {
-        return null;
+    public <E extends Throwable> Observable<T> catchingAsync(Class<E> exception, AsyncTransformation<E, T> catchingAsync, Executor executor) {
+        return new AsyncCatchingObservable<>(this, exception, catchingAsync, executor);
     }
 
     /**

@@ -12,11 +12,12 @@ import cl.benm.observable.Transformation;
  * Transforms and emits the exception emissions of a given Observable
  * @param <T> The input type
  */
-public class CatchingObservable<T> extends ValueObservable<T> {
+public class CatchingObservable<T,E extends Throwable> extends ValueObservable<T> {
 
     private final Observable<T> delegate;
     private final Executor executor;
-    private Transformation<Throwable, T> transformation;
+    private final Transformation<E, T> transformation;
+    private final Class<E> exception;
 
     /**
      * Instantiate the observable
@@ -24,8 +25,9 @@ public class CatchingObservable<T> extends ValueObservable<T> {
      * @param transformation The transformation to apply
      * @param executor The thread to execute the transformation on
      */
-    public CatchingObservable(Observable<T> delegate, Transformation<Throwable, T> transformation, Executor executor) {
+    public CatchingObservable(Observable<T> delegate, Class<E> exception, Transformation<E, T> transformation, Executor executor) {
         this.delegate = delegate;
+        this.exception = exception;
         this.transformation = transformation;
         this.executor = executor;
     }
@@ -44,7 +46,11 @@ public class CatchingObservable<T> extends ValueObservable<T> {
 
     private void doTransform(Throwable throwable) {
         try {
-            emit(new ExceptionOrValue.Value<T>(transformation.transform(throwable)));
+            if (throwable.getClass() == exception) {
+                emit(new ExceptionOrValue.Value<T>(transformation.transform((E) throwable)));
+            } else {
+                emit(new ExceptionOrValue.Exception<>(throwable));
+            }
         } catch (Throwable e) {
             emit(new ExceptionOrValue.Exception<>(throwable));
         }
