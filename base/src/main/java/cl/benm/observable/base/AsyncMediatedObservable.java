@@ -40,16 +40,14 @@ public abstract class AsyncMediatedObservable<T,R> extends MediatedObservable<T,
 
     @Override
     protected void onActive() {
-        super.onActive();
         if (asyncDelegate != null) asyncDelegate.observe(asyncObserver, executor);
-        delegate.observe(observer, executor);
+        super.onActive();
     }
 
     @Override
     protected void onInactive() {
-        super.onInactive();
         if (asyncDelegate != null) asyncDelegate.removeObserver(asyncObserver);
-        delegate.removeObserver(observer);
+        super.onInactive();
     }
 
     // We don't know the type of the returned Observable, so always return MULTIPLE for consistency
