@@ -1,5 +1,8 @@
 package cl.benm.observable.helpers;
 
+/**
+ * Thrown when an illegal subclass of ExceptionOrValue is given to an Observable
+ */
 public class IllegalExceptionOrValueException extends IllegalArgumentException {
 
     public static final String MESSAGE = "Value provided to %s must be an ExceptionOrValue.Value or ExceptionOrValue.Exception!";
