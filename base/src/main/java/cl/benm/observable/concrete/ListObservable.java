@@ -26,8 +26,10 @@ public class ListObservable<T> extends AggregateObservable<T, List<T>> {
                 return;
             } else {
                 emit(new ExceptionOrValue.Exception<>(new IllegalExceptionOrValueException("onAllUpdate(List<ExceptionOrValue<T>>)")));
+                return;
             }
         }
+        emit(new ExceptionOrValue.Value<>(collection));
     }
 
 }

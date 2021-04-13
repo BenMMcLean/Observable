@@ -36,7 +36,7 @@ public class Observables {
     }
 
     public static <T> Observable<List<T>> allAsList(List<Observable<T>> observables, Executor executor) {
-        return new ListObservable<T>(observables, executor);
+        return new ListObservable<>(observables, executor);
     }
 
 }
