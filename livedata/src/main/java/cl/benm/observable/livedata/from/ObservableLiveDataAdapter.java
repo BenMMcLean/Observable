@@ -1,4 +1,4 @@
-package cl.benm.observable.livedata;
+package cl.benm.observable.livedata.from;
 
 import androidx.lifecycle.LiveData;
 

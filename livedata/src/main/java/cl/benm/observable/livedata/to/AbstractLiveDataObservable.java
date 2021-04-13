@@ -1,23 +1,20 @@
-package cl.benm.observable.livedata;
+package cl.benm.observable.livedata.to;
 
 import androidx.lifecycle.LiveData;
+
 import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.concrete.ValueObservable;
 
-/**
- * Wrap a LiveData in an Observable
- * @param <T> The type of the Observable
- */
-public class LiveDataObservable<T> extends ValueObservable<T> {
+public class AbstractLiveDataObservable<T,R> extends ValueObservable<T> {
 
-    private final LiveData<T> delegate;
+    private final LiveData<R> delegate;
 
     /**
      * Instantiate the Observable
      * @param delegate The internal LiveData
      */
-    public LiveDataObservable(LiveData<T> delegate) {
+    public AbstractLiveDataObservable(LiveData<R> delegate) {
         this.delegate = delegate;
     }
 
@@ -26,7 +23,7 @@ public class LiveDataObservable<T> extends ValueObservable<T> {
         return EmissionType.MULTIPLE;
     }
 
-    private final androidx.lifecycle.Observer<T> observer = (v) -> emit(new ExceptionOrValue.Value<>(v));
+    protected androidx.lifecycle.Observer<R> observer;
 
     @Override
     protected void onActive() {
@@ -39,4 +36,5 @@ public class LiveDataObservable<T> extends ValueObservable<T> {
         super.onInactive();
         delegate.removeObserver(observer);
     }
+
 }
