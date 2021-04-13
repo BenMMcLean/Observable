@@ -20,8 +20,14 @@ public abstract class AbstractObservable<T> implements Observable<T> {
            after a single emission*/
         observe(new Observer<T> () {
             @Override
-            public void onChanged(ExceptionOrValue<T> value) {
+            public void onChanged(T value) {
                 observer.onChanged(value);
+                removeObserver(this);
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                observer.onException(exception);
                 removeObserver(this);
             }
         }, executor);
@@ -35,6 +41,16 @@ public abstract class AbstractObservable<T> implements Observable<T> {
     @Override
     public <R> Observable<R> transformAsync(AsyncTransformation<T, R> transformation, Executor executor) {
         return new AsyncTransformObservable<>(this, transformation, executor);
+    }
+
+    @Override
+    public <R> Observable<R> catching(Transformation<? extends Throwable, R> catching, Executor executor) {
+        return null;
+    }
+
+    @Override
+    public <R> Observable<R> catchingAsync(AsyncTransformation<? extends Throwable, R> catchingAsync, Executor executor) {
+        return null;
     }
 
     /**

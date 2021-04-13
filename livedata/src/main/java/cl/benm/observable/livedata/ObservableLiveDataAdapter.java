@@ -27,7 +27,17 @@ public class ObservableLiveDataAdapter<T> extends LiveData<ExceptionOrValue<T>> 
         this.executor = executor;
     }
 
-    private final Observer<T> observer = this::setValue;
+    private final Observer<T> observer = new Observer<T>() {
+        @Override
+        public void onChanged(T value) {
+            setValue(new ExceptionOrValue.Value<>(value));
+        }
+
+        @Override
+        public void onException(Throwable exception) {
+            setValue(new ExceptionOrValue.Exception<>(exception));
+        }
+    };
 
     @Override
     protected void onActive() {

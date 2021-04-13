@@ -9,15 +9,14 @@ import cl.benm.observable.Observer;
 import cl.benm.observable.Transformation;
 
 /**
- * Transforms and emits the emissions of a given Observable
+ * Transforms and emits the exception emissions of a given Observable
  * @param <T> The input type
- * @param <R> The output type
  */
-public class TransformObservable<T, R> extends ValueObservable<R> {
+public class CatchingObservable<T> extends ValueObservable<T> {
 
     private final Observable<T> delegate;
     private final Executor executor;
-    private Transformation<T, R> transformation;
+    private Transformation<Throwable, T> transformation;
 
     /**
      * Instantiate the observable
@@ -25,7 +24,7 @@ public class TransformObservable<T, R> extends ValueObservable<R> {
      * @param transformation The transformation to apply
      * @param executor The thread to execute the transformation on
      */
-    public TransformObservable(Observable<T> delegate, Transformation<T, R> transformation, Executor executor) {
+    public CatchingObservable(Observable<T> delegate, Transformation<Throwable, T> transformation, Executor executor) {
         this.delegate = delegate;
         this.transformation = transformation;
         this.executor = executor;
@@ -34,18 +33,22 @@ public class TransformObservable<T, R> extends ValueObservable<R> {
     private final Observer<T> observer = new Observer<T>() {
         @Override
         public void onChanged(T value) {
-            try {
-                emit(new ExceptionOrValue.Value<>(transformation.transform(value)));
-            } catch (Throwable throwable) {
-                emit(new ExceptionOrValue.Exception<>(throwable));
-            }
+            emit(new ExceptionOrValue.Value<>(value));
         }
 
         @Override
         public void onException(Throwable exception) {
-            emit(new ExceptionOrValue.Exception<>(exception));
+            doTransform(exception);
         }
     };
+
+    private void doTransform(Throwable throwable) {
+        try {
+            emit(new ExceptionOrValue.Value<T>(transformation.transform(throwable)));
+        } catch (Throwable e) {
+            emit(new ExceptionOrValue.Exception<>(throwable));
+        }
+    }
 
     @Override
     protected void onActive() {

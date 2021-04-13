@@ -18,13 +18,12 @@ import cl.benm.observable.Observer;
  * transformation Observable, said value is emitted to the subscribers
  * of this Observable.
  * @param <T> The input type of the transformation
- * @param <R> The output type of the transformation
  */
-public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
+public class AsyncCatchingObservable<T> extends ValueObservable<T> {
 
     private final Observable<T> delegate;
-    private AsyncTransformation<T,R> transformation;
-    private Observable<R> transformationDelegate;
+    private AsyncTransformation<Throwable,T> transformation;
+    private Observable<T> transformationDelegate;
     private Executor executor;
 
     /**
@@ -33,15 +32,15 @@ public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
      * @param transformation The transformation to apply
      * @param executor The thread to execute the transformation on
      */
-    public AsyncTransformObservable(Observable<T> delegate, AsyncTransformation<T, R> transformation, Executor executor) {
+    public AsyncCatchingObservable(Observable<T> delegate, AsyncTransformation<Throwable, T> transformation, Executor executor) {
         this.delegate = delegate;
         this.transformation = transformation;
         this.executor = executor;
     }
 
-    private final Observer<R> transformationObserver = new Observer<R>() {
+    private final Observer<T> transformationObserver = new Observer<T>() {
         @Override
-        public void onChanged(R value) {
+        public void onChanged(T value) {
             emit(new ExceptionOrValue.Value<>(value));
         }
 
@@ -53,22 +52,22 @@ public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
     private final Observer<T> observer = new Observer<T>() {
         @Override
         public void onChanged(T value) {
+            emit(new ExceptionOrValue.Value<>(value));
+        }
+
+        @Override
+        public void onException(Throwable exception) {
             if (transformationDelegate != null) {
                 transformationDelegate.removeObserver(transformationObserver);
             }
             try {
-                transformationDelegate = transformation.transformAsync(value);
+                transformationDelegate = transformation.transformAsync(exception);
                 if (active) {
                     transformationDelegate.observe(transformationObserver, executor);
                 }
             } catch (Throwable t) {
                 emit(new ExceptionOrValue.Exception<>(t));
             }
-        }
-
-        @Override
-        public void onException(Throwable exception) {
-            emit(new ExceptionOrValue.Exception<>(exception));
         }
     };
 

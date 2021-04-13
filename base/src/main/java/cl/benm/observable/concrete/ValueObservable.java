@@ -12,9 +12,11 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import cl.benm.observable.AbstractObservable;
-import cl.benm.observable.EmissionType;
+import cl.benm.observable.AsyncTransformation;
 import cl.benm.observable.ExceptionOrValue;
+import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
+import cl.benm.observable.Transformation;
 
 /**
  * A basic raw implementation of the Observable. Emission is achieved by calling emit()
@@ -29,7 +31,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
     // The executors to use for a given observer
     private final Map<Observer<T>, Executor> executorMap = new HashMap<>();
 
-    private ExceptionOrValue<T> lastValue = null;
+    private ExceptionOrValue<T> lastEmission = null;
     private boolean emittedFirst = false;
     boolean active = false;
 
@@ -38,7 +40,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
      * @param value The value to emit
      */
     protected void emit(ExceptionOrValue<T> value) {
-        lastValue = value;
+        lastEmission = value;
         emittedFirst = true;
 
         emitToList(value, observerList);
@@ -57,7 +59,13 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private void emit(ExceptionOrValue<T> value, Observer<T> observer) {
         Executor executor = executorMap.get(observer);
-        executor.execute(() -> observer.onChanged(value));
+        executor.execute(() -> {
+            if (value instanceof ExceptionOrValue.Value) {
+                observer.onChanged(((ExceptionOrValue.Value<T>) value).getValue());
+            } else if (value instanceof ExceptionOrValue.Exception) {
+                observer.onException(((ExceptionOrValue.Exception<T>) value).getThrowable());
+            }
+        });
     }
 
     @Override
@@ -65,7 +73,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         observerList.add(observer);
         executorMap.put(observer, executor);
         if (emittedFirst) {
-            emit(lastValue, observer);
+            emit(lastEmission, observer);
         }
         updateActive();
     }
@@ -84,7 +92,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         observers.add(observer);
 
         if (emittedFirst && inEmittableState(lifecycleOwner)) {
-            emit(lastValue, observer);
+            emit(lastEmission, observer);
         }
         updateActive();
     }
@@ -159,7 +167,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     @Override
     public ExceptionOrValue<T> value() {
-        return lastValue;
+        return lastEmission;
     }
 
     private final LifecycleObserver lifecycleObserver = (LifecycleEventObserver) (source, event) -> {
@@ -167,7 +175,11 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
             List<Observer<T>> os = lifecycleOwnerListMap.get(source);
             if (os != null) {
                 for(Observer<T> o: os) {
-                    o.onChanged(lastValue);
+                    if (lastEmission instanceof ExceptionOrValue.Value) {
+                        o.onChanged(((ExceptionOrValue.Value<T>) lastEmission).getValue());
+                    } else if (lastEmission instanceof ExceptionOrValue.Exception) {
+                        o.onException(((ExceptionOrValue.Exception<T>) lastEmission).getThrowable());
+                    }
                 }
             }
         } else if (event == Lifecycle.Event.ON_DESTROY) {

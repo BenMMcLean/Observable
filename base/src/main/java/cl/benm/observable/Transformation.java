@@ -12,6 +12,6 @@ public interface Transformation<T,R> {
      * @param in The given value
      * @return An transformed value
      */
-    ExceptionOrValue<R> transform(ExceptionOrValue<T> in);
+    R transform(T in) throws Throwable;
 
 }

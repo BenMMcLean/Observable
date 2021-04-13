@@ -10,6 +10,8 @@ public interface Observer<T> {
      * When the Observable emits a value
      * @param value The value emitted
      */
-    void onChanged(ExceptionOrValue<T> value);
+    void onChanged(T value);
+
+    void onException(Throwable exception);
 
 }

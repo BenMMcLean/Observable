@@ -1,9 +1,6 @@
 package cl.benm.observable
 
 import cl.benm.observable.concrete.SingleValueObservable
-import cl.benm.observable.unwrap.SimpleAsyncTransformation
-import cl.benm.observable.unwrap.SimpleObserver
-import cl.benm.observable.unwrap.SimpleTransformation
 import org.junit.Assert
 import org.junit.Test
 
@@ -11,21 +8,19 @@ class AsyncTransformTest {
 
     @Test(timeout = 500)
     fun singleTransform() {
-        val emitter = SingleValueObservable<Int>(ExceptionOrValue.Value(0))
-            .transformAsync(object: SimpleAsyncTransformation<Int, Int>() {
-                override fun transformSuccess(`in`: Int?): Observable<Int> {
-                    return SingleValueObservable(ExceptionOrValue.Value(`in`!!+1))
+        SingleValueObservable<Int>(ExceptionOrValue.Value(0))
+            .transformAsync(AsyncTransformation<Int, Int> {
+                SingleValueObservable(ExceptionOrValue.Value(it!!+1))
+            }, DirectExecutor.INSTANCE)
+            .observe(object: Observer<Int> {
+                override fun onChanged(value: Int?) {
+                    Assert.assertEquals(value, 1)
+                }
+
+                override fun onException(exception: Throwable?) {
+                    throw exception!!
                 }
             }, DirectExecutor.INSTANCE)
-        emitter.observe(object: SimpleObserver<Int>() {
-            override fun onSuccess(value: Int?) {
-                Assert.assertEquals(value, 1)
-            }
-
-            override fun onFailure(throwable: Throwable?) {
-                throw throwable!!
-            }
-        }, DirectExecutor.INSTANCE)
     }
 
     @Test(timeout = 500)
@@ -37,22 +32,22 @@ class AsyncTransformTest {
         )
         var emissionIndex = 0
 
-        val emitter = EmissionOverTimeObservable<Int>(emissions.map { ExceptionOrValue.Value(it) })
-        val transformed = emitter.transformAsync(object: SimpleAsyncTransformation<Int, Int>() {
-            override fun transformSuccess(`in`: Int?): Observable<Int> {
-                return SingleValueObservable(ExceptionOrValue.Value(`in`!!+1))
-            }
-        }, DirectExecutor.INSTANCE)
-        transformed.observe(object: SimpleObserver<Int>() {
-            override fun onSuccess(value: Int?) {
-                Assert.assertEquals(value, emissions[emissionIndex++]+1)
-            }
+        EmissionOverTimeObservable<Int>(emissions.map { ExceptionOrValue.Value(it) }).apply {
+            transformAsync(AsyncTransformation<Int, Int> {
+                SingleValueObservable(ExceptionOrValue.Value(it!!+1))
+            }, DirectExecutor.INSTANCE)
+                .observe(object: Observer<Int> {
+                    override fun onChanged(value: Int?) {
+                        Assert.assertEquals(value, emissions[emissionIndex++]+1)
+                    }
 
-            override fun onFailure(throwable: Throwable?) {
-                throw throwable!!
-            }
-        }, DirectExecutor.INSTANCE)
-        emitter.start()
+                    override fun onException(exception: Throwable?) {
+                        throw exception!!
+                    }
+                }, DirectExecutor.INSTANCE)
+
+            start()
+        }
     }
 
 }

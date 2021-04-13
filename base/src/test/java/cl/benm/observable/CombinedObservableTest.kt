@@ -3,7 +3,6 @@ package cl.benm.observable
 import cl.benm.observable.concrete.CombinedObservable
 import cl.benm.observable.concrete.SingleValueObservable
 import cl.benm.observable.unwrap.SimpleCombiner
-import cl.benm.observable.unwrap.SimpleObserver
 import org.junit.Assert
 import org.junit.Test
 
@@ -30,13 +29,13 @@ class CombinedObservableTest {
                 DirectExecutor.INSTANCE
         )
 
-        combined.observe(object: SimpleObserver<List<String>>() {
-            override fun onSuccess(value: List<String>?) {
+        combined.observe(object: Observer<List<String>> {
+            override fun onChanged(value: List<String>?) {
                 Assert.assertEquals(value, results[resultIndex++])
             }
 
-            override fun onFailure(throwable: Throwable?) {
-                throw throwable!!
+            override fun onException(exception: Throwable?) {
+                throw exception!!
             }
         }, DirectExecutor.INSTANCE)
 

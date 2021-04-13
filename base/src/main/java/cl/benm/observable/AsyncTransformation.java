@@ -12,6 +12,6 @@ public interface AsyncTransformation<T,R> {
      * @param in The given value
      * @return An Observable
      */
-    Observable<R> transformAsync(ExceptionOrValue<T> in);
+    Observable<R> transformAsync(T in) throws Throwable;
 
 }
