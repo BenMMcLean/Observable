@@ -7,6 +7,7 @@ import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
+import cl.benm.observable.base.ValueObservable;
 
 /**
  * Catch an exception passed down the Observable chain and transform it asynchronously

@@ -7,6 +7,7 @@ import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
 import cl.benm.observable.Transformation;
+import cl.benm.observable.base.ValueObservable;
 
 /**
  * Transforms and emits the exception emissions of a given Observable

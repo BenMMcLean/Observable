@@ -1,4 +1,4 @@
-package cl.benm.observable.concrete;
+package cl.benm.observable.base;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;

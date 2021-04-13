@@ -1,6 +1,6 @@
 package cl.benm.observable
 
-import cl.benm.observable.concrete.ValueObservable
+import cl.benm.observable.base.ValueObservable
 
 class EmissionOverTimeObservable<T>(
     private val emissions: List<ExceptionOrValue<T>>

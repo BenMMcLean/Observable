@@ -3,8 +3,7 @@ package cl.benm.observable.livedata.to;
 import androidx.lifecycle.LiveData;
 
 import cl.benm.observable.EmissionType;
-import cl.benm.observable.ExceptionOrValue;
-import cl.benm.observable.concrete.ValueObservable;
+import cl.benm.observable.base.ValueObservable;
 
 public class AbstractLiveDataObservable<T,R> extends ValueObservable<T> {
 
