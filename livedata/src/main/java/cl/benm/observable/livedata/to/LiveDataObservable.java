@@ -12,6 +12,7 @@ public class LiveDataObservable<T> extends AbstractLiveDataObservable<T,T> {
 
     public LiveDataObservable(LiveData<T> delegate) {
         super(delegate);
+        super.observer = observer;
     }
 
     protected final androidx.lifecycle.Observer<T> observer = (v) -> emit(new ExceptionOrValue.Value<>(v));

@@ -7,7 +7,9 @@ import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
+import cl.benm.observable.base.AsyncMediatedObservable;
 import cl.benm.observable.base.ValueObservable;
+import cl.benm.observable.helpers.Observables;
 
 /**
  * Transform the emissions of an Observable into another Observable.
@@ -21,12 +23,7 @@ import cl.benm.observable.base.ValueObservable;
  * @param <T> The input type of the transformation
  * @param <R> The output type of the transformation
  */
-public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
-
-    private final Observable<T> delegate;
-    private AsyncTransformation<T,R> transformation;
-    private Observable<R> transformationDelegate;
-    private Executor executor;
+public class AsyncTransformObservable<T,R> extends AsyncMediatedObservable<T, R> {
 
     /**
      * Instantiate the observable
@@ -35,61 +32,22 @@ public class AsyncTransformObservable<T,R> extends ValueObservable<R> {
      * @param executor The thread to execute the transformation on
      */
     public AsyncTransformObservable(Observable<T> delegate, AsyncTransformation<T, R> transformation, Executor executor) {
-        this.delegate = delegate;
-        this.transformation = transformation;
-        this.executor = executor;
-    }
+        super(delegate, executor);
 
-    private final Observer<R> transformationObserver = new Observer<R>() {
-        @Override
-        public void onChanged(R value) {
-            emit(new ExceptionOrValue.Value<>(value));
-        }
-
-        @Override
-        public void onException(Throwable exception) {
-            emit(new ExceptionOrValue.Exception<>(exception));
-        }
-    };
-    private final Observer<T> observer = new Observer<T>() {
-        @Override
-        public void onChanged(T value) {
-            if (transformationDelegate != null) {
-                transformationDelegate.removeObserver(transformationObserver);
-            }
-            try {
-                transformationDelegate = transformation.transformAsync(value);
-                if (active) {
-                    transformationDelegate.observe(transformationObserver, executor);
+        observer = new Observer<T>() {
+            @Override
+            public void onChanged(T value) {
+                try {
+                    emit(transformation.transformAsync(value));
+                } catch (Throwable t) {
+                    emit(Observables.immediateFailedObservable(t));
                 }
-            } catch (Throwable t) {
-                emit(new ExceptionOrValue.Exception<>(t));
             }
-        }
 
-        @Override
-        public void onException(Throwable exception) {
-            emit(new ExceptionOrValue.Exception<>(exception));
-        }
-    };
-
-    @Override
-    protected void onActive() {
-        super.onActive();
-        if (transformationDelegate != null) transformationDelegate.observe(transformationObserver, executor);
-        delegate.observe(observer, executor);
-    }
-
-    @Override
-    protected void onInactive() {
-        super.onInactive();
-        if (transformationDelegate != null) transformationDelegate.removeObserver(transformationObserver);
-        delegate.removeObserver(observer);
-    }
-
-    // We don't know the type of the returned Observable, so always return MULTIPLE for consistency
-    @Override
-    public EmissionType getEmissionType() {
-        return EmissionType.MULTIPLE;
+            @Override
+            public void onException(Throwable exception) {
+                emit(Observables.immediateFailedObservable(exception));
+            }
+        };
     }
 }

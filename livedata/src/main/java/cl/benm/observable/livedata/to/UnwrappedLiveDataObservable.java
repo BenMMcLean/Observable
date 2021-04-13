@@ -7,6 +7,7 @@ public class UnwrappedLiveDataObservable<T> extends AbstractLiveDataObservable<T
 
     public UnwrappedLiveDataObservable(LiveData<ExceptionOrValue<T>> delegate) {
         super(delegate);
+        super.observer = observer;
     }
 
     protected final androidx.lifecycle.Observer<ExceptionOrValue<T>> observer = this::emit;
