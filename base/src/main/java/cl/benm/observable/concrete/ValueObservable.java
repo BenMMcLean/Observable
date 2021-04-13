@@ -26,10 +26,11 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     // List of non lifecycle observers
     private final List<Observer<T>> observerList = new ArrayList<>();
+    protected final Map<Observer<T>, Boolean> hasEmitted = new HashMap<>();
     // Map of lifecycle observers
     private final Map<LifecycleOwner, List<Observer<T>>> lifecycleOwnerListMap = new HashMap<>();
     // The executors to use for a given observer
-    private final Map<Observer<T>, Executor> executorMap = new HashMap<>();
+    protected final Map<Observer<T>, Executor> executorMap = new HashMap<>();
 
     private ExceptionOrValue<T> lastEmission = null;
     private boolean emittedFirst = false;
@@ -51,21 +52,26 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         }
     }
 
-    private void emitToList(ExceptionOrValue<T> value, List<Observer<T>> list) {
+    protected void emitToList(ExceptionOrValue<T> value, List<Observer<T>> list) {
         for (Observer<T> o : list) {
             emit(value, o);
         }
     }
 
-    private void emit(ExceptionOrValue<T> value, Observer<T> observer) {
+    protected void emit(ExceptionOrValue<T> value, Observer<T> observer) {
+        hasEmitted.put(observer, true);
         Executor executor = executorMap.get(observer);
         executor.execute(() -> {
-            if (value instanceof ExceptionOrValue.Value) {
-                observer.onChanged(((ExceptionOrValue.Value<T>) value).getValue());
-            } else if (value instanceof ExceptionOrValue.Exception) {
-                observer.onException(((ExceptionOrValue.Exception<T>) value).getThrowable());
-            }
+            emitValue(value, observer);
         });
+    }
+
+    protected void emitValue(ExceptionOrValue<T> value, Observer<T> observer) {
+        if (value instanceof ExceptionOrValue.Value) {
+            observer.onChanged(((ExceptionOrValue.Value<T>) value).getValue());
+        } else if (value instanceof ExceptionOrValue.Exception) {
+            observer.onException(((ExceptionOrValue.Exception<T>) value).getThrowable());
+        }
     }
 
     @Override
@@ -175,10 +181,8 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
             List<Observer<T>> os = lifecycleOwnerListMap.get(source);
             if (os != null) {
                 for(Observer<T> o: os) {
-                    if (lastEmission instanceof ExceptionOrValue.Value) {
-                        o.onChanged(((ExceptionOrValue.Value<T>) lastEmission).getValue());
-                    } else if (lastEmission instanceof ExceptionOrValue.Exception) {
-                        o.onException(((ExceptionOrValue.Exception<T>) lastEmission).getThrowable());
+                    if (!hasEmitted.containsKey(o) || !hasEmitted.get(o)) {
+                        emit(lastEmission, o);
                     }
                 }
             }
