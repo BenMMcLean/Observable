@@ -3,6 +3,7 @@ package cl.benm.observable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
 
 import cl.benm.observable.concrete.AsyncCatchingObservable;
@@ -20,16 +21,23 @@ public abstract class AbstractObservable<T> implements Observable<T> {
     public void observeOnce(Observer<T> observer, Executor executor) {
         /* Wrap the provided observer in an anonymous one that removes itself
            after a single emission*/
+        WeakReference<Observer<T>> reference = new WeakReference<>(observer);
         observe(new Observer<T> () {
             @Override
             public void onChanged(T value) {
-                observer.onChanged(value);
+                Observer<T> localObserver = reference.get();
+                if (localObserver != null) {
+                    observer.onChanged(value);
+                }
                 removeObserver(this);
             }
 
             @Override
             public void onException(Throwable exception) {
-                observer.onException(exception);
+                Observer<T> localObserver = reference.get();
+                if (localObserver != null) {
+                    observer.onException(exception);
+                }
                 removeObserver(this);
             }
         }, executor);
