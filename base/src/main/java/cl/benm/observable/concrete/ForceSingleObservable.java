@@ -6,9 +6,7 @@ import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
-import cl.benm.observable.Transformation;
 import cl.benm.observable.base.MediatedObservable;
-import cl.benm.observable.base.ValueObservable;
 
 public class ForceSingleObservable<T> extends MediatedObservable<T, T> {
 
@@ -31,7 +29,7 @@ public class ForceSingleObservable<T> extends MediatedObservable<T, T> {
 
     @Override
     protected void onActive() {
-        if (!emittedFirst) {
+        if (!hasEmittedFirst()) {
             super.onActive();
         }
     }

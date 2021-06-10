@@ -24,7 +24,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
     ObserverManager<T> observerManager = new ObserverManager<>();
 
     private ExceptionOrValue<T> lastEmission = null;
-    protected boolean emittedFirst = false;
+    private boolean emittedFirst = false;
     protected boolean active = false;
 
     /**
