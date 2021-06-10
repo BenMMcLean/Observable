@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import cl.benm.observable.Combiner;
+import cl.benm.observable.EmissionType;
 import cl.benm.observable.ExceptionOrValue;
 import cl.benm.observable.Observable;
 import cl.benm.observable.concrete.CombinedObservable;
+import cl.benm.observable.concrete.ForceSingleObservable;
 import cl.benm.observable.concrete.ListObservable;
 import cl.benm.observable.concrete.SingleValueObservable;
 import cl.benm.observable.unwrap.SimpleCombiner;
@@ -71,6 +73,17 @@ public class Observables {
      */
     public static <T> Observable<List<T>> allAsList(List<Observable<T>> observables, Executor executor) {
         return new ListObservable<>(observables, executor);
+    }
+
+    /**
+     * Forces an Observable to only emit a single value
+     * @param observable The Observable to force
+     * @param executor The executor
+     * @param <T> THe type of the Observable
+     * @return An Observable forcing a singular emission
+     */
+    public static <T> Observable<T> forceSingle(Observable<T> observable, Executor executor) {
+        return new ForceSingleObservable<>(observable, executor);
     }
 
 }

@@ -5,20 +5,15 @@ import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 
 import cl.benm.observable.AbstractObservable;
-import cl.benm.observable.AsyncTransformation;
 import cl.benm.observable.ExceptionOrValue;
-import cl.benm.observable.Observable;
 import cl.benm.observable.Observer;
-import cl.benm.observable.Transformation;
 
 /**
  * A basic raw implementation of the Observable. Emission is achieved by calling emit()
@@ -49,17 +44,17 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
 
     private void emitToList(ExceptionOrValue<T> value, List<ObserverManager.ObserverWrapper<T>> list) {
         for (ObserverManager.ObserverWrapper<T> o : list) {
-            emit(value, o);
+            emitToObserver(value, o);
         }
     }
 
-    private void emit(ExceptionOrValue<T> value, ObserverManager.ObserverWrapper<T> observer) {
+    private void emitToObserver(ExceptionOrValue<T> value, ObserverManager.ObserverWrapper<T> observer) {
         Observer<T> localObserver = observer.getObserver().get();
         if (localObserver == null) return;
-        emit(value, localObserver, observer.getExecutor());
+        emitToObserverWithExecutor(value, localObserver, observer.getExecutor());
     }
 
-    private void emit(ExceptionOrValue<T> value, Observer<T> observer, Executor executor) {
+    private void emitToObserverWithExecutor(ExceptionOrValue<T> value, Observer<T> observer, Executor executor) {
         executor.execute(() -> {
             if (value instanceof ExceptionOrValue.Value) {
                 observer.onChanged(((ExceptionOrValue.Value<T>) value).getValue());
@@ -73,7 +68,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
     public void observe(Observer<T> observer, Executor executor) {
         observerManager.add(observer, executor);
         if (emittedFirst) {
-            emit(lastEmission, observer, executor);
+            emitToObserverWithExecutor(lastEmission, observer, executor);
         }
         updateActive();
     }
@@ -83,7 +78,7 @@ public abstract class ValueObservable<T> extends AbstractObservable<T> {
         if (observerManager.add(observer, lifecycleOwner, executor)) lifecycleOwner.getLifecycle().addObserver(lifecycleObserver);
 
         if (emittedFirst && inEmittableState(lifecycleOwner)) {
-            emit(lastEmission, observer, executor);
+            emitToObserverWithExecutor(lastEmission, observer, executor);
         }
         updateActive();
     }
