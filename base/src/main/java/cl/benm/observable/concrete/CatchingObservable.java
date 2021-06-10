@@ -39,15 +39,15 @@ public class CatchingObservable<T,E extends Throwable> extends MediatedObservabl
             }
 
             @Override
-            public void onException(Throwable exception1) {
-                doTransform(exception1);
+            public void onException(Throwable throwable) {
+                doTransform(throwable);
             }
         };
     }
 
     private void doTransform(Throwable throwable) {
         try {
-            if (throwable.getClass() == exception) {
+            if (exception.isAssignableFrom(throwable.getClass())) {
                 emit(new ExceptionOrValue.Value<>(transformation.transform((E) throwable)));
             } else {
                 emit(new ExceptionOrValue.Exception<>(throwable));

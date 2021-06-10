@@ -38,7 +38,7 @@ public class AsyncCatchingObservable<T, E extends Throwable> extends AsyncMediat
             @Override
             public void onException(Throwable ex) {
                 try {
-                    if (ex.getClass() == exception) {
+                    if (exception.isAssignableFrom(ex.getClass())) {
                         emit(transformation.transformAsync((E) ex));
                     } else {
                         emit(Observables.immediateFailedObservable(ex));
