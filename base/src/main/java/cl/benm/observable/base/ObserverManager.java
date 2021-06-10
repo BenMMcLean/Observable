@@ -18,7 +18,7 @@ import cl.benm.observable.Observer;
  */
 public class ObserverManager<T> {
 
-    private HashMap<LifecycleOwner, List<ObserverWrapper<T>>> observers = new HashMap<>();
+    private final HashMap<LifecycleOwner, List<ObserverWrapper<T>>> observers = new HashMap<>();
 
     public ObserverManager() {
         observers.put(null, new ArrayList<>());
