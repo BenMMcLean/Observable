@@ -15,12 +15,14 @@ allprojects {
 Then, include the modules as required
 ```groovy
 dependencies {
+    def observable_version = "1.0.6"
+
     // The basic Observable interface and helper classes
-    implementation 'com.github.BenMMcLean.Observable:base:1.0.5'
+    implementation 'com.github.BenMMcLean.Observable:base:$observable_version'
     // The LiveData Observable wrappers
-    implementation 'com.github.BenMMcLean.Observable:livedata:1.0.5'
+    implementation 'com.github.BenMMcLean.Observable:livedata:$observable_version'
     // The ListenableFuture Observable wrappers
-    implementation 'com.github.BenMMcLean.Observable:future:1.0.5'
+    implementation 'com.github.BenMMcLean.Observable:future:$observable_version'
 }
 ```
 
