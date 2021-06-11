@@ -49,21 +49,26 @@ class MultithreadingTest {
                 2,
                 5
         )
-        var emissionIndex = 0
 
-        EmissionOverTimeObservable(emissions.map { ExceptionOrValue.Value<Int>(it) })
-                .transformAsync(AsyncTransformation<Int, Int> {
-                    Observables.immediateObservable(it+1)
-                }, ThreadExecutor())
-                .observe(object: Observer<Int> {
-                    override fun onChanged(value: Int?) {
-                        Assert.assertEquals(emissions[emissionIndex++]+1, value)
-                    }
+        val emitter = EmissionOverTimeObservable(emissions.map { ExceptionOrValue.Value<Int>(it) })
 
-                    override fun onException(exception: Throwable?) {
-                        throw exception!!
-                    }
-                }, ThreadExecutor())
+        emitter.transformAsync(AsyncTransformation<Int, Int> {
+            Observables.immediateObservable(it+1)
+        }, ThreadExecutor())
+        .transformAsync(AsyncTransformation<Int, Int> {
+            Observables.immediateObservable(it+1)
+        }, ThreadExecutor())
+        .observe(object: Observer<Int> {
+            override fun onChanged(value: Int?) {
+                Assert.assertTrue(emissions.contains((value ?: -1)  - 2))
+            }
+
+            override fun onException(exception: Throwable?) {
+                throw exception!!
+            }
+        }, ThreadExecutor())
+
+        emitter.start()
     }
 
 }
@@ -71,8 +76,10 @@ class MultithreadingTest {
 class ThreadExecutor: Executor {
 
     override fun execute(command: Runnable?) {
-        Thread {
-            command?.run()
+        object: Thread() {
+            override fun run() {
+                command?.run()
+            }
         }.start()
     }
 

@@ -8,3 +8,7 @@ import java.util.concurrent.Executor
 fun <T> Observable<T>.toFuture(executor: Executor): ListenableFuture<T> {
     return ObservableToFuture.toFuture(this, executor)
 }
+
+fun <T> ListenableFuture<T>.toObservable(): Observable<T> {
+    return FutureObservable(this)
+}
