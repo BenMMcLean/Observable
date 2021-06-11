@@ -16,6 +16,14 @@ fun <T> Observable<T>.toLiveData(executor: Executor): LiveData<ExceptionOrValue<
     return ObservableToLiveData.toLiveData(this, executor)
 }
 
+fun <T> LiveData<T>.toObservable(): Observable<T> {
+    return LiveDataObservable(this)
+}
+
+fun <T> LiveData<ExceptionOrValue<T>>.toUnwrappedObservable(): Observable<T> {
+    return UnwrappedLiveDataObservable(this)
+}
+
 fun <T> LiveData<ExceptionOrValue<T>>.discardExceptions(log: Boolean = true): LiveData<T> {
     return Transformations.map(this) {
         when(it) {
@@ -44,12 +52,4 @@ fun <T> LiveData<ExceptionOrValue<T>>.discardExceptions(logger: Logger?): LiveDa
             else -> throw IllegalExceptionOrValueException("discardExceptions(Boolean)")
         }
     }
-}
-
-fun <T> LiveData<T>.toObservable(): Observable<T> {
-    return LiveDataObservable(this)
-}
-
-fun <T> LiveData<ExceptionOrValue<T>>.toUnwrappedObservable(): Observable<T> {
-    return UnwrappedLiveDataObservable(this)
 }
