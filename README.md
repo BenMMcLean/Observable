@@ -1,5 +1,7 @@
 # Observable
 
+[![Latest Release](https://jitpack.io/v/BenMMcLean/Observable.svg)](https://jitpack.io/#BenMMcLean/Observable/)
+
 A basic abstraction of LiveData and ListenableFuture for Android.
 
 ## Installation
