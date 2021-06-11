@@ -1,6 +1,8 @@
 # Observable
 
 [![Latest Release](https://jitpack.io/v/BenMMcLean/Observable.svg)](https://jitpack.io/#BenMMcLean/Observable/)
+[![Build Status](https://github.com/BenMMcLean/Observable/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/BenMMcLean/Observable/actions/workflows/gradle.yml)
+
 
 A basic abstraction of LiveData and ListenableFuture for Android.
 
